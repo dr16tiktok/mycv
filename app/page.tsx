@@ -56,6 +56,32 @@ const extraSteps = [
     placeholder: "• Lanzamiento de X...\n• Lideré Y...",
     kind: "experience" as const,
   },
+  {
+    id: "education",
+    title: "Educación",
+    subtitle: "Título, institución y año.",
+    placeholder: "Lic. en Marketing — UBA (2016)",
+    kind: "education" as const,
+  },
+  {
+    id: "skills",
+    title: "Habilidades",
+    subtitle: "Seleccioná o agregá las tuyas.",
+    kind: "skills" as const,
+  },
+];
+
+const skillOptions = [
+  "Producto",
+  "Growth",
+  "Ventas",
+  "Marketing",
+  "Operaciones",
+  "Automatización",
+  "Data",
+  "IA",
+  "E-commerce",
+  "UX/UI",
 ];
 
 type BaseStepId = (typeof baseSteps)[number]["id"];
@@ -87,7 +113,11 @@ export default function Home() {
   const [extras, setExtras] = useState<Record<ExtraStepId, string>>({
     summary: "",
     experience: "",
+    education: "",
+    skills: "",
   });
+  const [skills, setSkills] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState("");
 
   const steps = useMemo(() => {
     const selected = socialOptions.filter((s) => socials[s.id]);
@@ -141,6 +171,21 @@ export default function Home() {
 
   const skip = () => {
     goNext();
+  };
+
+  const toggleSkill = (label: string) => {
+    setSkills((prev) =>
+      prev.includes(label)
+        ? prev.filter((s) => s !== label)
+        : [...prev, label]
+    );
+  };
+
+  const addCustomSkill = () => {
+    const value = skillInput.trim();
+    if (!value) return;
+    if (!skills.includes(value)) setSkills([...skills, value]);
+    setSkillInput("");
   };
 
   return (
@@ -236,7 +281,9 @@ export default function Home() {
               </div>
             )}
 
-            {(step.kind === "summary" || step.kind === "experience") && (
+            {(step.kind === "summary" ||
+              step.kind === "experience" ||
+              step.kind === "education") && (
               <div>
                 <textarea
                   className="min-h-[160px] w-full resize-none rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-4 text-base outline-none transition focus:border-sky-400"
@@ -249,6 +296,58 @@ export default function Home() {
                     })
                   }
                 />
+              </div>
+            )}
+
+            {step.kind === "skills" && (
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap gap-2">
+                  {skillOptions.map((label) => {
+                    const active = skills.includes(label);
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => toggleSkill(label)}
+                        className={`rounded-full border px-4 py-2 text-sm transition ${
+                          active
+                            ? "border-sky-400 bg-sky-400/15 text-sky-200"
+                            : "border-zinc-800 bg-zinc-900 text-zinc-300"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-base outline-none transition focus:border-sky-400"
+                    placeholder="Agregar habilidad..."
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addCustomSkill();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomSkill}
+                    className="rounded-2xl border border-zinc-800 px-4 py-3 text-sm text-zinc-200 transition hover:border-zinc-600"
+                  >
+                    Agregar
+                  </button>
+                </div>
+
+                {skills.length > 0 && (
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-sm text-zinc-300">
+                    {skills.join(" · ")}
+                  </div>
+                )}
               </div>
             )}
 
