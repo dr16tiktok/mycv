@@ -2,6 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  TemplateClassic,
+  TemplateCreative,
+  TemplateMinimal,
+} from "./templates";
 
 const baseSteps = [
   {
@@ -97,9 +102,9 @@ const skillOptions = [
 ];
 
 const templates = [
-  { id: "aura", name: "Aura" },
+  { id: "classic", name: "Clásico" },
   { id: "minimal", name: "Minimal" },
-  { id: "bold", name: "Bold" },
+  { id: "creative", name: "Creativo" },
 ];
 
 type BaseStepId = (typeof baseSteps)[number]["id"];
@@ -402,25 +407,27 @@ export default function Home() {
               </div>
             )}
 
-            {step.kind === "preview" && (
-              <div className="rounded-3xl border border-zinc-800 bg-white/5 p-5">
-                <div className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                  {templates.find((t) => t.id === templateId)?.name}
+            {step.kind === "preview" && (() => {
+              const data = {
+                fullName: form.fullName || "Tu Nombre",
+                role: form.role || "Tu Rol",
+                city: form.city || "Ciudad",
+                email: form.email || "tu@email.com",
+                summary: extras.summary || "Resumen profesional...",
+                experience: extras.experience || "Experiencia destacada...",
+                education: extras.education || "Educación...",
+                skills: skills.length > 0 ? skills : ["Habilidades"],
+                socials: [],
+              };
+
+              return (
+                <div className="grid gap-4">
+                  {templateId === "classic" && <TemplateClassic data={data} />}
+                  {templateId === "minimal" && <TemplateMinimal data={data} />}
+                  {templateId === "creative" && <TemplateCreative data={data} />}
                 </div>
-                <div className="mt-3 text-xl font-semibold">
-                  {form.fullName || "Tu Nombre"}
-                </div>
-                <div className="text-sm text-zinc-400">
-                  {form.role || "Tu Rol"} · {form.city || "Ciudad"}
-                </div>
-                <div className="mt-4 text-sm text-zinc-300">
-                  {extras.summary || "Resumen profesional..."}
-                </div>
-                <div className="mt-4 text-xs text-zinc-500">
-                  {skills.length > 0 ? skills.join(" · ") : "Habilidades"}
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             <div className="mt-auto grid grid-cols-2 gap-3">
               <button
