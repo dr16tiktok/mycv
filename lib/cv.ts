@@ -30,3 +30,14 @@ export function linesToBullets(lines: string[]): string[] {
 export function bulletsFromText(text: string): string[] {
   return linesToBullets(textToLines(text));
 }
+
+export function initialsFromName(name: string): string {
+  const parts = name
+    .split(/\s+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
+  const out = (first + last).toUpperCase();
+  return out || "CV";
+}

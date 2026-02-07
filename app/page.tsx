@@ -437,7 +437,7 @@ export default function Home() {
                   </button>
                 </div>
 
-                <div className="overflow-auto rounded-3xl bg-zinc-950 p-3 ring-1 ring-zinc-800">
+                <div className="overflow-auto rounded-3xl bg-zinc-100 p-3 ring-1 ring-zinc-200">
                   <div
                     className="origin-top-left"
                     style={{ transform: `scale(${previewZoom})` }}

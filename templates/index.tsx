@@ -15,17 +15,17 @@ export const templateRegistry: TemplateMeta[] = [
   {
     id: "classic",
     name: "Clásico",
-    description: "2 columnas, sidebar de contacto, look corporativo.",
+    description: "Foto + sidebar + secciones tipo CV Canva (corporativo).",
   },
   {
     id: "minimal",
     name: "Minimal",
-    description: "Monocromo, espacios limpios, foco en legibilidad.",
+    description: "Blanco, elegante, ultra legible (recruiter-friendly).",
   },
   {
     id: "creative",
     name: "Creativo",
-    description: "Acento de color y jerarquía fuerte tipo portfolio.",
+    description: "Header con color + layout moderno tipo portfolio.",
   },
 ];
 

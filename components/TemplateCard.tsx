@@ -27,13 +27,15 @@ export function TemplateCard({
       <div className="text-base font-semibold">{meta.name}</div>
       <div className="mt-1 text-sm text-zinc-400">{meta.description}</div>
 
-      <div className="mt-4 overflow-hidden rounded-2xl bg-zinc-950 p-3 ring-1 ring-zinc-800">
+      <div className="mt-4 overflow-hidden rounded-2xl bg-zinc-100 p-3 ring-1 ring-zinc-200">
         {/* Mini preview (scaled) */}
-        <div
-          className="origin-top-left"
-          style={{ transform: "scale(0.22)", width: A4_WIDTH }}
-        >
-          <RenderTemplate id={meta.id} data={data} />
+        <div className="flex justify-center">
+          <div
+            className="origin-top-left"
+            style={{ transform: "scale(0.3)", width: A4_WIDTH }}
+          >
+            <RenderTemplate id={meta.id} data={data} />
+          </div>
         </div>
       </div>
 
