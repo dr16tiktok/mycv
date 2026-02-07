@@ -293,19 +293,23 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const isExpScreen =
+      step?.kind === "expCompany" ||
+      step?.kind === "expTitle" ||
+      step?.kind === "expDates" ||
+      step?.kind === "expBullets";
+
+    // When starting to edit an experience, jump into the experience editor ONCE.
+    // Do NOT force the index afterwards (otherwise it "locks" you on the first screen).
     if (editingExpId) {
+      if (isExpScreen) return;
       const target = steps.findIndex((s) => s.kind === "expCompany");
       if (target >= 0 && target !== index) setIndex(target);
       return;
     }
 
     // If we just finished/canceled experience editing, return to the home screen.
-    if (
-      step?.kind === "expCompany" ||
-      step?.kind === "expTitle" ||
-      step?.kind === "expDates" ||
-      step?.kind === "expBullets"
-    ) {
+    if (isExpScreen) {
       const home = steps.findIndex((s) => s.kind === "experienceHome");
       if (home >= 0 && home !== index) setIndex(home);
     }
