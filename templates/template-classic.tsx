@@ -1,7 +1,9 @@
+import type { ReactNode } from "react";
 import type { CvData } from "@/lib/cv";
 import { bulletsFromText } from "@/lib/cv";
+import { CvPaper } from "@/components/CvPaper";
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+function SectionTitle({ children }: { children: ReactNode }) {
   return (
     <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
       {children}
@@ -14,18 +16,18 @@ export function TemplateClassic({ data }: { data: CvData }) {
   const edu = bulletsFromText(data.education);
 
   return (
-    <div className="rounded-[28px] bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200">
-      <div className="grid grid-cols-[220px_1fr] gap-6 p-6">
+    <CvPaper className="rounded-2xl">
+      <div className="grid grid-cols-[240px_1fr] gap-7 p-8">
         {/* Sidebar */}
-        <aside className="rounded-2xl bg-zinc-50 p-4 ring-1 ring-zinc-200">
-          <div className="text-lg font-semibold leading-tight">
+        <aside className="rounded-2xl bg-zinc-50 p-5 ring-1 ring-zinc-200">
+          <div className="text-xl font-semibold leading-tight">
             {data.fullName}
           </div>
           <div className="mt-1 text-sm text-zinc-500">{data.role}</div>
 
-          <div className="mt-4 h-px bg-zinc-200" />
+          <div className="mt-5 h-px bg-zinc-200" />
 
-          <div className="mt-4 grid gap-2 text-xs text-zinc-600">
+          <div className="mt-5 grid gap-3 text-xs text-zinc-600">
             <div>
               <div className="text-[10px] uppercase tracking-[0.22em] text-zinc-500">
                 Ubicación
@@ -44,7 +46,7 @@ export function TemplateClassic({ data }: { data: CvData }) {
                   Links
                 </div>
                 <div className="mt-1 grid gap-1">
-                  {data.socials.slice(0, 4).map((s) => (
+                  {data.socials.slice(0, 5).map((s) => (
                     <div key={s.label} className="break-all">
                       <span className="text-zinc-500">{s.label}:</span> {s.value}
                     </div>
@@ -54,15 +56,15 @@ export function TemplateClassic({ data }: { data: CvData }) {
             )}
           </div>
 
-          <div className="mt-4 h-px bg-zinc-200" />
+          <div className="mt-5 h-px bg-zinc-200" />
 
-          <div className="mt-4">
+          <div className="mt-5">
             <SectionTitle>Habilidades</SectionTitle>
             <div className="mt-2 flex flex-wrap gap-2">
-              {data.skills.slice(0, 12).map((s) => (
+              {data.skills.slice(0, 14).map((s) => (
                 <span
                   key={s}
-                  className="rounded-full bg-white px-2 py-1 text-[11px] text-zinc-700 ring-1 ring-zinc-200"
+                  className="rounded-full bg-white px-2.5 py-1 text-[11px] text-zinc-700 ring-1 ring-zinc-200"
                 >
                   {s}
                 </span>
@@ -73,18 +75,18 @@ export function TemplateClassic({ data }: { data: CvData }) {
 
         {/* Main */}
         <section className="min-w-0">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+          <div className="rounded-2xl border border-zinc-200 p-6">
             <SectionTitle>Perfil</SectionTitle>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-700">
+            <p className="mt-3 text-sm leading-relaxed text-zinc-700">
               {data.summary}
             </p>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-zinc-200 bg-white p-5">
+          <div className="mt-5 rounded-2xl border border-zinc-200 p-6">
             <SectionTitle>Experiencia</SectionTitle>
-            <ul className="mt-3 grid gap-2">
+            <ul className="mt-4 grid gap-2">
               {exp.length > 0 ? (
-                exp.slice(0, 8).map((b, i) => (
+                exp.slice(0, 10).map((b, i) => (
                   <li key={i} className="flex gap-2 text-sm text-zinc-700">
                     <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400" />
                     <span className="min-w-0">{b}</span>
@@ -96,11 +98,11 @@ export function TemplateClassic({ data }: { data: CvData }) {
             </ul>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-zinc-200 bg-white p-5">
+          <div className="mt-5 rounded-2xl border border-zinc-200 p-6">
             <SectionTitle>Educación</SectionTitle>
-            <ul className="mt-3 grid gap-2">
+            <ul className="mt-4 grid gap-2">
               {edu.length > 0 ? (
-                edu.slice(0, 6).map((b, i) => (
+                edu.slice(0, 8).map((b, i) => (
                   <li key={i} className="text-sm text-zinc-700">
                     {b}
                   </li>
@@ -112,6 +114,6 @@ export function TemplateClassic({ data }: { data: CvData }) {
           </div>
         </section>
       </div>
-    </div>
+    </CvPaper>
   );
 }

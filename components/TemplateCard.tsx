@@ -3,6 +3,7 @@
 import type { CvData } from "@/lib/cv";
 import type { TemplateId, TemplateMeta } from "@/templates";
 import { RenderTemplate } from "@/templates";
+import { A4_WIDTH } from "@/components/CvPaper";
 
 export function TemplateCard({
   meta,
@@ -30,7 +31,7 @@ export function TemplateCard({
         {/* Mini preview (scaled) */}
         <div
           className="origin-top-left"
-          style={{ transform: "scale(0.42)", width: 760 }}
+          style={{ transform: "scale(0.22)", width: A4_WIDTH }}
         >
           <RenderTemplate id={meta.id} data={data} />
         </div>

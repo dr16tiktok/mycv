@@ -138,6 +138,7 @@ export default function Home() {
   const [templateId, setTemplateId] = useState<TemplateId>(
     templateRegistry[0].id
   );
+  const [previewZoom, setPreviewZoom] = useState(0.55);
 
   const steps = useMemo(() => {
     const selected = socialOptions.filter((s) => socials[s.id]);
@@ -406,13 +407,40 @@ export default function Home() {
             {step.kind === "preview" && (
               <div className="grid gap-3">
                 <div className="text-xs text-zinc-400">
-                  Preview del template: <span className="text-zinc-200">{templateRegistry.find((t) => t.id === templateId)?.name}</span>
+                  Preview del template:{" "}
+                  <span className="text-zinc-200">
+                    {templateRegistry.find((t) => t.id === templateId)?.name}
+                  </span>
                 </div>
 
-                <div className="overflow-hidden rounded-3xl bg-zinc-950 p-3 ring-1 ring-zinc-800">
+                <div className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900 px-3 py-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPreviewZoom((z) => Math.max(0.35, Math.round((z - 0.05) * 100) / 100))
+                    }
+                    className="rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-200"
+                  >
+                    Zoom −
+                  </button>
+                  <div className="text-xs text-zinc-400">
+                    {Math.round(previewZoom * 100)}%
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPreviewZoom((z) => Math.min(1, Math.round((z + 0.05) * 100) / 100))
+                    }
+                    className="rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-200"
+                  >
+                    Zoom +
+                  </button>
+                </div>
+
+                <div className="overflow-auto rounded-3xl bg-zinc-950 p-3 ring-1 ring-zinc-800">
                   <div
                     className="origin-top-left"
-                    style={{ transform: "scale(0.52)", width: 760 }}
+                    style={{ transform: `scale(${previewZoom})` }}
                   >
                     <RenderTemplate id={templateId} data={cvData} />
                   </div>
