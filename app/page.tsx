@@ -69,6 +69,18 @@ const extraSteps = [
     subtitle: "Seleccioná o agregá las tuyas.",
     kind: "skills" as const,
   },
+  {
+    id: "template",
+    title: "Elegí un template",
+    subtitle: "Podés cambiarlo después.",
+    kind: "template" as const,
+  },
+  {
+    id: "preview",
+    title: "Preview",
+    subtitle: "Así se verá tu CV.",
+    kind: "preview" as const,
+  },
 ];
 
 const skillOptions = [
@@ -82,6 +94,12 @@ const skillOptions = [
   "IA",
   "E-commerce",
   "UX/UI",
+];
+
+const templates = [
+  { id: "aura", name: "Aura" },
+  { id: "minimal", name: "Minimal" },
+  { id: "bold", name: "Bold" },
 ];
 
 type BaseStepId = (typeof baseSteps)[number]["id"];
@@ -118,6 +136,7 @@ export default function Home() {
   });
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
+  const [templateId, setTemplateId] = useState(templates[0].id);
 
   const steps = useMemo(() => {
     const selected = socialOptions.filter((s) => socials[s.id]);
@@ -348,6 +367,58 @@ export default function Home() {
                     {skills.join(" · ")}
                   </div>
                 )}
+              </div>
+            )}
+
+            {step.kind === "template" && (
+              <div className="grid gap-3">
+                {templates.map((t) => {
+                  const active = t.id === templateId;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTemplateId(t.id)}
+                      className={`flex items-center justify-between rounded-2xl border px-4 py-4 text-left transition ${
+                        active
+                          ? "border-sky-400 bg-sky-400/10"
+                          : "border-zinc-800 bg-zinc-900"
+                      }`}
+                    >
+                      <div>
+                        <div className="text-base font-semibold">{t.name}</div>
+                        <div className="text-sm text-zinc-400">
+                          Estilo limpio y elegante.
+                        </div>
+                      </div>
+                      <div
+                        className={`h-3 w-3 rounded-full ${
+                          active ? "bg-sky-400" : "bg-zinc-700"
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {step.kind === "preview" && (
+              <div className="rounded-3xl border border-zinc-800 bg-white/5 p-5">
+                <div className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+                  {templates.find((t) => t.id === templateId)?.name}
+                </div>
+                <div className="mt-3 text-xl font-semibold">
+                  {form.fullName || "Tu Nombre"}
+                </div>
+                <div className="text-sm text-zinc-400">
+                  {form.role || "Tu Rol"} · {form.city || "Ciudad"}
+                </div>
+                <div className="mt-4 text-sm text-zinc-300">
+                  {extras.summary || "Resumen profesional..."}
+                </div>
+                <div className="mt-4 text-xs text-zinc-500">
+                  {skills.length > 0 ? skills.join(" · ") : "Habilidades"}
+                </div>
               </div>
             )}
 
