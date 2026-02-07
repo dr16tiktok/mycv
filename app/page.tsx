@@ -41,9 +41,28 @@ const socialOptions = [
   { id: "portfolio", label: "Portfolio" },
 ];
 
+const extraSteps = [
+  {
+    id: "summary",
+    title: "Resumen profesional",
+    subtitle: "2–3 líneas sobre tu perfil.",
+    placeholder: "Soy emprendedor...",
+    kind: "summary" as const,
+  },
+  {
+    id: "experience",
+    title: "Experiencia (resumen)",
+    subtitle: "Contá tus principales logros y responsabilidades.",
+    placeholder: "• Lanzamiento de X...\n• Lideré Y...",
+    kind: "experience" as const,
+  },
+];
+
 type BaseStepId = (typeof baseSteps)[number]["id"];
 
 type SocialId = (typeof socialOptions)[number]["id"];
+
+type ExtraStepId = (typeof extraSteps)[number]["id"];
 
 export default function Home() {
   const [index, setIndex] = useState(0);
@@ -64,6 +83,10 @@ export default function Home() {
     github: "",
     x: "",
     portfolio: "",
+  });
+  const [extras, setExtras] = useState<Record<ExtraStepId, string>>({
+    summary: "",
+    experience: "",
   });
 
   const steps = useMemo(() => {
@@ -93,6 +116,7 @@ export default function Home() {
         kind: "socials" as const,
       },
       ...socialSteps,
+      ...extraSteps,
     ];
   }, [socials]);
 
@@ -206,6 +230,22 @@ export default function Home() {
                     setSocialLinks({
                       ...socialLinks,
                       [step.id as SocialId]: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            )}
+
+            {(step.kind === "summary" || step.kind === "experience") && (
+              <div>
+                <textarea
+                  className="min-h-[160px] w-full resize-none rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-4 text-base outline-none transition focus:border-sky-400"
+                  placeholder={step.placeholder}
+                  value={extras[step.id as ExtraStepId]}
+                  onChange={(e) =>
+                    setExtras({
+                      ...extras,
+                      [step.id as ExtraStepId]: e.target.value,
                     })
                   }
                 />
