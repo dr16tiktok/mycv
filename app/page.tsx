@@ -2,11 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  TemplateClassic,
-  TemplateCreative,
-  TemplateMinimal,
-} from "./templates";
+import type { CvData } from "@/lib/cv";
+import { RenderTemplate, templateRegistry, type TemplateId } from "@/templates";
+import { TemplateCard } from "@/components/TemplateCard";
 
 const baseSteps = [
   {
@@ -101,11 +99,7 @@ const skillOptions = [
   "UX/UI",
 ];
 
-const templates = [
-  { id: "classic", name: "Clásico" },
-  { id: "minimal", name: "Minimal" },
-  { id: "creative", name: "Creativo" },
-];
+// Templates are defined in @/templates (registry)
 
 type BaseStepId = (typeof baseSteps)[number]["id"];
 
@@ -141,7 +135,9 @@ export default function Home() {
   });
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
-  const [templateId, setTemplateId] = useState(templates[0].id);
+  const [templateId, setTemplateId] = useState<TemplateId>(
+    templateRegistry[0].id
+  );
 
   const steps = useMemo(() => {
     const selected = socialOptions.filter((s) => socials[s.id]);
@@ -211,6 +207,24 @@ export default function Home() {
     if (!skills.includes(value)) setSkills([...skills, value]);
     setSkillInput("");
   };
+
+  const cvData = useMemo<CvData>(() => {
+    const socialsList = socialOptions
+      .filter((s) => socials[s.id] && socialLinks[s.id].trim().length > 0)
+      .map((s) => ({ label: s.label, value: socialLinks[s.id].trim() }));
+
+    return {
+      fullName: form.fullName || "Tu Nombre",
+      role: form.role || "Tu Rol",
+      city: form.city || "Ciudad",
+      email: form.email || "tu@email.com",
+      summary: extras.summary || "Resumen profesional...",
+      experience: extras.experience || "• Logro principal...\n• Responsabilidad clave...",
+      education: extras.education || "Carrera — Universidad (Año)",
+      skills: skills.length > 0 ? skills : ["Habilidades"],
+      socials: socialsList,
+    };
+  }, [extras.education, extras.experience, extras.summary, form, skills, socials, socialLinks]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
@@ -376,58 +390,35 @@ export default function Home() {
             )}
 
             {step.kind === "template" && (
-              <div className="grid gap-3">
-                {templates.map((t) => {
-                  const active = t.id === templateId;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setTemplateId(t.id)}
-                      className={`flex items-center justify-between rounded-2xl border px-4 py-4 text-left transition ${
-                        active
-                          ? "border-sky-400 bg-sky-400/10"
-                          : "border-zinc-800 bg-zinc-900"
-                      }`}
-                    >
-                      <div>
-                        <div className="text-base font-semibold">{t.name}</div>
-                        <div className="text-sm text-zinc-400">
-                          Estilo limpio y elegante.
-                        </div>
-                      </div>
-                      <div
-                        className={`h-3 w-3 rounded-full ${
-                          active ? "bg-sky-400" : "bg-zinc-700"
-                        }`}
-                      />
-                    </button>
-                  );
-                })}
+              <div className="grid gap-4">
+                {templateRegistry.map((meta) => (
+                  <TemplateCard
+                    key={meta.id}
+                    meta={meta}
+                    active={meta.id === templateId}
+                    onSelect={setTemplateId}
+                    data={cvData}
+                  />
+                ))}
               </div>
             )}
 
-            {step.kind === "preview" && (() => {
-              const data = {
-                fullName: form.fullName || "Tu Nombre",
-                role: form.role || "Tu Rol",
-                city: form.city || "Ciudad",
-                email: form.email || "tu@email.com",
-                summary: extras.summary || "Resumen profesional...",
-                experience: extras.experience || "Experiencia destacada...",
-                education: extras.education || "Educación...",
-                skills: skills.length > 0 ? skills : ["Habilidades"],
-                socials: [],
-              };
-
-              return (
-                <div className="grid gap-4">
-                  {templateId === "classic" && <TemplateClassic data={data} />}
-                  {templateId === "minimal" && <TemplateMinimal data={data} />}
-                  {templateId === "creative" && <TemplateCreative data={data} />}
+            {step.kind === "preview" && (
+              <div className="grid gap-3">
+                <div className="text-xs text-zinc-400">
+                  Preview del template: <span className="text-zinc-200">{templateRegistry.find((t) => t.id === templateId)?.name}</span>
                 </div>
-              );
-            })()}
+
+                <div className="overflow-hidden rounded-3xl bg-zinc-950 p-3 ring-1 ring-zinc-800">
+                  <div
+                    className="origin-top-left"
+                    style={{ transform: "scale(0.52)", width: 760 }}
+                  >
+                    <RenderTemplate id={templateId} data={cvData} />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="mt-auto grid grid-cols-2 gap-3">
               <button
