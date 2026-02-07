@@ -1,11 +1,19 @@
 # MyCV
 
-Proyecto base para construir mi CV/portfolio.
+Web app mobile‑first para crear un CV mediante un flujo de preguntas (wizard) y exportarlo a PDF.
 
-## Estructura
-- `index.html` — página principal
-- `styles.css` — estilos
-- `assets/` — imágenes y recursos
+## Stack
+- Next.js (App Router)
+- Tailwind CSS
+- Framer Motion
+- TypeScript
 
-## Cómo correrlo
-Abrí `index.html` en el navegador.
+## Scripts
+```bash
+npm run dev
+npm run build
+npm run start
+```
+
+## Convenciones
+Ver `AGENTS.md` y `docs/SCREEN-FORMAT.md`.
