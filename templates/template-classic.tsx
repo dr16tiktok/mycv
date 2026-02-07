@@ -27,7 +27,8 @@ function ContactRow({
 }
 
 export function TemplateClassic({ data }: { data: CvData }) {
-  const exp = bulletsFromText(data.experience);
+  const expLegacy = bulletsFromText(data.experience);
+  const expItems = data.experiences && data.experiences.length > 0 ? data.experiences : null;
   const edu = bulletsFromText(data.education);
   const initials = initialsFromName(data.fullName);
 
@@ -123,17 +124,47 @@ export function TemplateClassic({ data }: { data: CvData }) {
 
             <div className="mt-7">
               <SectionTitle>Work Experience</SectionTitle>
-              <ul className="mt-4 grid gap-2">
-                {exp.length > 0 ? (
-                  exp.slice(0, 10).map((b, i) => (
-                    <li key={i} className="text-sm text-zinc-700">
-                      {b}
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-sm text-zinc-500">(Sin datos aún)</li>
-                )}
-              </ul>
+
+              {expItems ? (
+                <div className="mt-4 grid gap-5">
+                  {expItems.slice(0, 3).map((job, j) => (
+                    <div key={j} className="rounded-xl border border-zinc-200 p-4">
+                      <div className="flex items-baseline justify-between gap-4">
+                        <div className="text-sm font-semibold text-zinc-800">
+                          {job.company || "Empresa"}
+                        </div>
+                        <div className="text-xs text-zinc-500">
+                          {job.dates || "Fechas"}
+                        </div>
+                      </div>
+                      <div className="mt-1 text-xs text-zinc-500">
+                        {job.title || "Cargo"}
+                      </div>
+                      {job.bullets.length > 0 && (
+                        <ul className="mt-3 grid gap-1">
+                          {job.bullets.slice(0, 5).map((b, i) => (
+                            <li key={i} className="text-sm text-zinc-700">
+                              {b}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <ul className="mt-4 grid gap-2">
+                  {expLegacy.length > 0 ? (
+                    expLegacy.slice(0, 10).map((b, i) => (
+                      <li key={i} className="text-sm text-zinc-700">
+                        {b}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-zinc-500">(Sin datos aún)</li>
+                  )}
+                </ul>
+              )}
             </div>
 
             <div className="mt-7">

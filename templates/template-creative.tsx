@@ -12,7 +12,8 @@ function SectionTitle({ children }: { children: ReactNode }) {
 }
 
 export function TemplateCreative({ data }: { data: CvData }) {
-  const exp = bulletsFromText(data.experience);
+  const expLegacy = bulletsFromText(data.experience);
+  const expItems = data.experiences && data.experiences.length > 0 ? data.experiences : null;
   const edu = bulletsFromText(data.education);
   const initials = initialsFromName(data.fullName);
 
@@ -54,18 +55,55 @@ export function TemplateCreative({ data }: { data: CvData }) {
 
               <div className="mt-7">
                 <SectionTitle>Work Experience</SectionTitle>
-                <div className="mt-4 grid gap-2">
-                  {exp.length > 0 ? (
-                    exp.slice(0, 10).map((b, i) => (
-                      <div key={i} className="flex gap-2 text-sm text-zinc-700">
-                        <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
-                        <span>{b}</span>
+
+                {expItems ? (
+                  <div className="mt-4 grid gap-5">
+                    {expItems.slice(0, 3).map((job, j) => (
+                      <div
+                        key={j}
+                        className="rounded-2xl border border-zinc-200 bg-white p-4"
+                      >
+                        <div className="flex items-baseline justify-between gap-4">
+                          <div className="text-sm font-semibold text-zinc-900">
+                            {job.company || "Empresa"}
+                          </div>
+                          <div className="text-xs text-zinc-500">
+                            {job.dates || "Fechas"}
+                          </div>
+                        </div>
+                        <div className="mt-1 text-xs text-zinc-500">
+                          {job.title || "Cargo"}
+                        </div>
+                        {job.bullets.length > 0 && (
+                          <div className="mt-3 grid gap-2">
+                            {job.bullets.slice(0, 5).map((b, i) => (
+                              <div
+                                key={i}
+                                className="flex gap-2 text-sm text-zinc-700"
+                              >
+                                <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
+                                <span>{b}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-sm text-zinc-500">(Sin datos aún)</div>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-4 grid gap-2">
+                    {expLegacy.length > 0 ? (
+                      expLegacy.slice(0, 10).map((b, i) => (
+                        <div key={i} className="flex gap-2 text-sm text-zinc-700">
+                          <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
+                          <span>{b}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-zinc-500">(Sin datos aún)</div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

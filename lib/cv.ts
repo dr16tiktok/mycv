@@ -3,16 +3,27 @@ export type SocialLink = {
   value: string;
 };
 
+export type ExperienceItem = {
+  company: string;
+  title: string;
+  dates: string;
+  bullets: string[];
+};
+
 export type CvData = {
   fullName: string;
   role: string;
   city: string;
   email: string;
   summary: string;
+  // Legacy fallback (keep for now)
   experience: string;
   education: string;
   skills: string[];
   socials: SocialLink[];
+
+  // Structured (preferred)
+  experiences?: ExperienceItem[];
 };
 
 export function textToLines(text: string): string[] {

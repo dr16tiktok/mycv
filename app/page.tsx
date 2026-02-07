@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { CvData } from "@/lib/cv";
+import { bulletsFromText, type CvData } from "@/lib/cv";
 import { RenderTemplate, templateRegistry, type TemplateId } from "@/templates";
 import { TemplateCard } from "@/components/TemplateCard";
 
@@ -53,11 +53,10 @@ const extraSteps = [
     kind: "summary" as const,
   },
   {
-    id: "experience",
-    title: "Experiencia (resumen)",
-    subtitle: "Contá tus principales logros y responsabilidades.",
-    placeholder: "• Lanzamiento de X...\n• Lideré Y...",
-    kind: "experience" as const,
+    id: "experienceHome",
+    title: "Experiencia laboral",
+    subtitle: "Agregá uno o más trabajos. Después se verá como un CV real.",
+    kind: "experienceHome" as const,
   },
   {
     id: "education",
@@ -86,6 +85,55 @@ const extraSteps = [
   },
 ];
 
+const experienceEditSteps = [
+  {
+    id: "expCompany",
+    title: "Empresa",
+    subtitle: "¿Dónde trabajaste?",
+    placeholder: "Ej: Borcelle Studio",
+    required: true,
+    kind: "expCompany" as const,
+  },
+  {
+    id: "expTitle",
+    title: "Cargo",
+    subtitle: "¿Cuál fue tu puesto?",
+    placeholder: "Ej: Marketing Manager",
+    required: true,
+    kind: "expTitle" as const,
+  },
+  {
+    id: "expDates",
+    title: "Fechas",
+    subtitle: "Ej: 2023 — Presente",
+    placeholder: "Ej: 2025 — 2029",
+    required: true,
+    kind: "expDates" as const,
+  },
+  {
+    id: "expBullets",
+    title: "Logros / responsabilidades",
+    subtitle: "Una línea por bullet.",
+    placeholder: "• Logro 1...\n• Logro 2...",
+    required: false,
+    kind: "expBullets" as const,
+  },
+];
+
+type ExperienceEditKind =
+  | "expCompany"
+  | "expTitle"
+  | "expDates"
+  | "expBullets";
+
+type ExperienceDraft = {
+  id: string;
+  company: string;
+  title: string;
+  dates: string;
+  bulletsText: string;
+};
+
 const skillOptions = [
   "Producto",
   "Growth",
@@ -105,7 +153,14 @@ type BaseStepId = (typeof baseSteps)[number]["id"];
 
 type SocialId = (typeof socialOptions)[number]["id"];
 
-type ExtraStepId = (typeof extraSteps)[number]["id"];
+type WizardStep = {
+  id: string;
+  kind: string;
+  title: string;
+  subtitle?: string;
+  placeholder?: string;
+  required?: boolean;
+};
 
 export default function Home() {
   const [index, setIndex] = useState(0);
@@ -127,22 +182,23 @@ export default function Home() {
     x: "",
     portfolio: "",
   });
-  const [extras, setExtras] = useState<Record<ExtraStepId, string>>({
-    summary: "",
-    experience: "",
-    education: "",
-    skills: "",
-  });
+  const [summary, setSummary] = useState("");
+  const [education, setEducation] = useState("");
+
+  const [experiences, setExperiences] = useState<ExperienceDraft[]>([]);
+  const [editingExpId, setEditingExpId] = useState<string | null>(null);
+
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
+
   const [templateId, setTemplateId] = useState<TemplateId>(
     templateRegistry[0].id
   );
   const [previewZoom, setPreviewZoom] = useState(0.55);
 
-  const steps = useMemo(() => {
+  const steps = useMemo<WizardStep[]>(() => {
     const selected = socialOptions.filter((s) => socials[s.id]);
-    const socialSteps = selected.map((s) => ({
+    const socialSteps: WizardStep[] = selected.map((s) => ({
       id: s.id,
       title: `Tu ${s.label}`,
       subtitle: "Pegá el link o usuario.",
@@ -158,41 +214,102 @@ export default function Home() {
       kind: "social" as const,
     }));
 
+    const extra: WizardStep[] = (extraSteps as unknown as WizardStep[]).flatMap((s) => {
+      if (s.kind === "experienceHome") {
+        return [
+          s,
+          ...(editingExpId
+            ? (experienceEditSteps as unknown as WizardStep[])
+            : []),
+        ];
+      }
+      return [s];
+    });
+
     return [
-      ...baseSteps.map((s) => ({ ...s, kind: "base" as const })),
+      ...baseSteps.map((s) => ({ ...s, kind: "base" } as WizardStep)),
       {
         id: "socials",
         title: "¿Qué redes querés agregar?",
         subtitle: "Elegí todas las que apliquen.",
-        kind: "socials" as const,
-      },
+        kind: "socials",
+      } as WizardStep, 
       ...socialSteps,
-      ...extraSteps,
+      ...extra,
     ];
-  }, [socials]);
+  }, [socials, editingExpId]);
 
   const step = steps[index];
   const total = steps.length;
 
+  const editingExp = useMemo(() => {
+    if (!editingExpId) return null;
+    return experiences.find((e) => e.id === editingExpId) ?? null;
+  }, [editingExpId, experiences]);
+
   const canNext = useMemo(() => {
     if (!step) return false;
+
     if (step.kind === "base") {
       return form[step.id as BaseStepId].trim().length > 0;
     }
+
+    if (step.kind === "expCompany") return (editingExp?.company ?? "").trim().length > 0;
+    if (step.kind === "expTitle") return (editingExp?.title ?? "").trim().length > 0;
+    if (step.kind === "expDates") return (editingExp?.dates ?? "").trim().length > 0;
+
     return true;
-  }, [form, step]);
+  }, [editingExp, form, step]);
 
   const goNext = () => {
+    if (!step) return;
+
+    if (step.kind === "expBullets") {
+      setEditingExpId(null);
+      return;
+    }
+
     if (index < total - 1) setIndex(index + 1);
   };
 
   const goPrev = () => {
+    if (!step) return;
+
+    if (step.kind === "expCompany") {
+      setEditingExpId(null);
+      return;
+    }
+
     if (index > 0) setIndex(index - 1);
   };
 
   const skip = () => {
+    if (!step) return;
+    if (step.kind === "expBullets") {
+      setEditingExpId(null);
+      return;
+    }
     goNext();
   };
+
+  useEffect(() => {
+    if (editingExpId) {
+      const target = steps.findIndex((s) => s.kind === "expCompany");
+      if (target >= 0 && target !== index) setIndex(target);
+      return;
+    }
+
+    // If we just finished/canceled experience editing, return to the home screen.
+    if (
+      step?.kind === "expCompany" ||
+      step?.kind === "expTitle" ||
+      step?.kind === "expDates" ||
+      step?.kind === "expBullets"
+    ) {
+      const home = steps.findIndex((s) => s.kind === "experienceHome");
+      if (home >= 0 && home !== index) setIndex(home);
+    }
+  }, [editingExpId, index, step?.kind, steps]);
 
   const toggleSkill = (label: string) => {
     setSkills((prev) =>
@@ -209,23 +326,70 @@ export default function Home() {
     setSkillInput("");
   };
 
+  const addExperience = () => {
+    const id =
+      (globalThis.crypto as any)?.randomUUID?.() ??
+      `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+    setExperiences((prev) => [
+      ...prev,
+      { id, company: "", title: "", dates: "", bulletsText: "" },
+    ]);
+    setEditingExpId(id);
+  };
+
+  const removeExperience = (id: string) => {
+    setExperiences((prev) => prev.filter((e) => e.id !== id));
+    if (editingExpId === id) setEditingExpId(null);
+  };
+
+  const updateEditingExperience = (
+    field: keyof Omit<ExperienceDraft, "id">,
+    value: string
+  ) => {
+    if (!editingExpId) return;
+    setExperiences((prev) =>
+      prev.map((e) => (e.id === editingExpId ? { ...e, [field]: value } : e))
+    );
+  };
+
   const cvData = useMemo<CvData>(() => {
     const socialsList = socialOptions
       .filter((s) => socials[s.id] && socialLinks[s.id].trim().length > 0)
       .map((s) => ({ label: s.label, value: socialLinks[s.id].trim() }));
+
+    const structuredExperiences = experiences
+      .map((e) => ({
+        company: e.company.trim(),
+        title: e.title.trim(),
+        dates: e.dates.trim(),
+        bullets: bulletsFromText(e.bulletsText),
+      }))
+      .filter((e) => e.company || e.title || e.dates || e.bullets.length > 0);
+
+    const legacyExperienceText = structuredExperiences.length
+      ? structuredExperiences
+          .map((e) => {
+            const header = `${e.company} — ${e.title} (${e.dates})`;
+            const bullets = e.bullets.map((b) => `• ${b}`).join("\n");
+            return bullets ? `${header}\n${bullets}` : header;
+          })
+          .join("\n\n")
+      : "• Logro principal...\n• Responsabilidad clave...";
 
     return {
       fullName: form.fullName || "Tu Nombre",
       role: form.role || "Tu Rol",
       city: form.city || "Ciudad",
       email: form.email || "tu@email.com",
-      summary: extras.summary || "Resumen profesional...",
-      experience: extras.experience || "• Logro principal...\n• Responsabilidad clave...",
-      education: extras.education || "Carrera — Universidad (Año)",
+      summary: summary || "Resumen profesional...",
+      experience: legacyExperienceText,
+      education: education || "Carrera — Universidad (Año)",
       skills: skills.length > 0 ? skills : ["Habilidades"],
       socials: socialsList,
+      experiences: structuredExperiences,
     };
-  }, [extras.education, extras.experience, extras.summary, form, skills, socials, socialLinks]);
+  }, [education, experiences, form, skills, socials, socialLinks, summary]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
@@ -320,20 +484,116 @@ export default function Home() {
               </div>
             )}
 
-            {(step.kind === "summary" ||
-              step.kind === "experience" ||
-              step.kind === "education") && (
+            {step.kind === "summary" && (
               <div>
                 <textarea
                   className="min-h-[160px] w-full resize-none rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-4 text-base outline-none transition focus:border-sky-400"
                   placeholder={step.placeholder}
-                  value={extras[step.id as ExtraStepId]}
-                  onChange={(e) =>
-                    setExtras({
-                      ...extras,
-                      [step.id as ExtraStepId]: e.target.value,
-                    })
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                />
+              </div>
+            )}
+
+            {step.kind === "experienceHome" && (
+              <div className="flex flex-col gap-4">
+                <div className="grid gap-3">
+                  {experiences.length === 0 ? (
+                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-sm text-zinc-300">
+                      Todavía no agregaste experiencias.
+                    </div>
+                  ) : (
+                    experiences.map((e, idx) => (
+                      <div
+                        key={e.id}
+                        className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+                      >
+                        <div className="text-sm font-semibold">
+                          {e.company || `Experiencia ${idx + 1}`}
+                        </div>
+                        <div className="mt-1 text-xs text-zinc-400">
+                          {(e.title || "Cargo") + " · " + (e.dates || "Fechas")}
+                        </div>
+                        <div className="mt-3 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setEditingExpId(e.id)}
+                            className="rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-200"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeExperience(e.id)}
+                            className="rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-200"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={addExperience}
+                  className="rounded-2xl bg-sky-400 px-4 py-4 text-sm font-semibold text-zinc-950 transition hover:bg-sky-300"
+                >
+                  + Agregar experiencia
+                </button>
+              </div>
+            )}
+
+            {(step.kind === "expCompany" ||
+              step.kind === "expTitle" ||
+              step.kind === "expDates") && (
+              <div>
+                <input
+                  className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-4 text-base outline-none transition focus:border-sky-400"
+                  placeholder={step.placeholder}
+                  value={
+                    step.kind === "expCompany"
+                      ? editingExp?.company ?? ""
+                      : step.kind === "expTitle"
+                      ? editingExp?.title ?? ""
+                      : editingExp?.dates ?? ""
                   }
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (step.kind === "expCompany")
+                      updateEditingExperience("company", v);
+                    else if (step.kind === "expTitle")
+                      updateEditingExperience("title", v);
+                    else updateEditingExperience("dates", v);
+                  }}
+                />
+              </div>
+            )}
+
+            {step.kind === "expBullets" && (
+              <div>
+                <textarea
+                  className="min-h-[200px] w-full resize-none rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-4 text-base outline-none transition focus:border-sky-400"
+                  placeholder={step.placeholder}
+                  value={editingExp?.bulletsText ?? ""}
+                  onChange={(e) =>
+                    updateEditingExperience("bulletsText", e.target.value)
+                  }
+                />
+                <div className="mt-2 text-xs text-zinc-400">
+                  Tip: empezá cada línea con “•” o “-” para que quede prolijo.
+                </div>
+              </div>
+            )}
+
+            {step.kind === "education" && (
+              <div>
+                <textarea
+                  className="min-h-[160px] w-full resize-none rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-4 text-base outline-none transition focus:border-sky-400"
+                  placeholder={step.placeholder}
+                  value={education}
+                  onChange={(e) => setEducation(e.target.value)}
                 />
               </div>
             )}
