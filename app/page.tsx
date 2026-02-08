@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { bulletsFromText, type CvData } from "@/lib/cv";
 import { RenderTemplate, templateRegistry, type TemplateId } from "@/templates";
 import { TemplateCard } from "@/components/TemplateCard";
+import { A4_HEIGHT, A4_WIDTH } from "@/components/CvPaper";
 
 const baseSteps = [
   {
@@ -702,11 +703,21 @@ export default function Home() {
                 </div>
 
                 <div className="overflow-auto rounded-3xl bg-zinc-100 p-3 ring-1 ring-zinc-200">
+                  {/*
+                    NOTE: CSS transform does not affect layout size.
+                    On mobile this made the preview feel “too long / stretched” because the
+                    scaled-down page still reserved the full (unscaled) A4 height.
+                  */}
                   <div
-                    className="origin-top-left"
-                    style={{ transform: `scale(${previewZoom})` }}
+                    className="mx-auto relative overflow-hidden"
+                    style={{ width: A4_WIDTH * previewZoom, height: A4_HEIGHT * previewZoom }}
                   >
-                    <RenderTemplate id={templateId} data={cvData} />
+                    <div
+                      className="origin-top-left absolute left-0 top-0"
+                      style={{ transform: `scale(${previewZoom})`, width: A4_WIDTH, height: A4_HEIGHT }}
+                    >
+                      <RenderTemplate id={templateId} data={cvData} />
+                    </div>
                   </div>
                 </div>
               </div>

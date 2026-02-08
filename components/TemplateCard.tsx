@@ -3,7 +3,7 @@
 import type { CvData } from "@/lib/cv";
 import type { TemplateId, TemplateMeta } from "@/templates";
 import { RenderTemplate } from "@/templates";
-import { A4_WIDTH } from "@/components/CvPaper";
+import { A4_HEIGHT, A4_WIDTH } from "@/components/CvPaper";
 
 export function TemplateCard({
   meta,
@@ -28,14 +28,26 @@ export function TemplateCard({
       <div className="mt-1 text-sm text-zinc-400">{meta.description}</div>
 
       <div className="mt-4 overflow-hidden rounded-2xl bg-zinc-100 p-3 ring-1 ring-zinc-200">
-        {/* Mini preview (scaled) */}
+        {/* Mini preview (scaled)
+            NOTE: transform doesn't affect layout size, so we wrap it in a sized box.
+        */}
         <div className="flex justify-center">
-          <div
-            className="origin-top-left"
-            style={{ transform: "scale(0.3)", width: A4_WIDTH }}
-          >
-            <RenderTemplate id={meta.id} data={data} />
-          </div>
+          {(() => {
+            const s = 0.3;
+            return (
+              <div
+                className="relative overflow-hidden"
+                style={{ width: A4_WIDTH * s, height: A4_HEIGHT * s }}
+              >
+                <div
+                  className="absolute left-0 top-0 origin-top-left"
+                  style={{ transform: `scale(${s})`, width: A4_WIDTH, height: A4_HEIGHT }}
+                >
+                  <RenderTemplate id={meta.id} data={data} />
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
