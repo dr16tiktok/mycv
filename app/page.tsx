@@ -197,6 +197,19 @@ export default function Home() {
   );
   const [previewZoom, setPreviewZoom] = useState(0.55);
 
+  function openPrintView() {
+    try {
+      localStorage.setItem(
+        "mycv:print",
+        JSON.stringify({ templateId, cvData, savedAt: Date.now() })
+      );
+    } catch {
+      // ignore
+    }
+
+    window.open("/print", "_blank", "noopener,noreferrer");
+  }
+
   const steps = useMemo<WizardStep[]>(() => {
     const selected = socialOptions.filter((s) => socials[s.id]);
     const socialSteps: WizardStep[] = selected.map((s) => ({
@@ -678,7 +691,7 @@ export default function Home() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900 px-3 py-2">
+                <div className="flex items-center justify-between gap-2 rounded-2xl border border-zinc-800 bg-zinc-900 px-3 py-2">
                   <button
                     type="button"
                     onClick={() =>
@@ -688,9 +701,20 @@ export default function Home() {
                   >
                     Zoom −
                   </button>
-                  <div className="text-xs text-zinc-400">
-                    {Math.round(previewZoom * 100)}%
+
+                  <div className="flex items-center gap-2">
+                    <div className="text-xs text-zinc-400">
+                      {Math.round(previewZoom * 100)}%
+                    </div>
+                    <button
+                      type="button"
+                      onClick={openPrintView}
+                      className="rounded-xl bg-sky-400 px-3 py-2 text-xs font-semibold text-zinc-950 hover:bg-sky-300"
+                    >
+                      Descargar PDF
+                    </button>
                   </div>
+
                   <button
                     type="button"
                     onClick={() =>
