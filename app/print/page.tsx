@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CvData } from "@/lib/cv";
 import { RenderTemplate, type TemplateId } from "@/templates";
-import { CvPaper } from "@/components/CvPaper";
 
 type StoredPrintPayload = {
   templateId: TemplateId;
@@ -44,7 +43,7 @@ export default function PrintPage() {
   }, [payload]);
 
   return (
-    <div className="min-h-screen bg-zinc-200 p-6 text-zinc-900">
+    <div className="print-root min-h-screen bg-zinc-200 p-6 text-zinc-900">
       <style jsx global>{`
         @page {
           size: A4;
@@ -53,6 +52,12 @@ export default function PrintPage() {
         @media print {
           html,
           body {
+            background: #fff !important;
+          }
+          .print-root {
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: auto !important;
             background: #fff !important;
           }
           .no-print {
@@ -100,9 +105,7 @@ export default function PrintPage() {
       ) : (
         <div className="mx-auto flex w-full justify-center">
           <div className="print-sheet">
-            <CvPaper>
-              <RenderTemplate id={payload.templateId} data={payload.cvData} />
-            </CvPaper>
+            <RenderTemplate id={payload.templateId} data={payload.cvData} />
           </div>
         </div>
       )}
