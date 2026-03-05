@@ -111,41 +111,6 @@ const extraSteps = [
   },
 ];
 
-const experienceEditSteps = [
-  {
-    id: "expCompany",
-    title: "Empresa",
-    subtitle: "¿Dónde trabajaste?",
-    placeholder: "Ej: Borcelle Studio",
-    required: true,
-    kind: "expCompany" as const,
-  },
-  {
-    id: "expTitle",
-    title: "Cargo",
-    subtitle: "¿Cuál fue tu puesto?",
-    placeholder: "Ej: Marketing Manager",
-    required: true,
-    kind: "expTitle" as const,
-  },
-  {
-    id: "expDates",
-    title: "Fechas",
-    subtitle: "Ej: 2023 — Presente",
-    placeholder: "Ej: 2025 — 2029",
-    required: true,
-    kind: "expDates" as const,
-  },
-  {
-    id: "expBullets",
-    title: "Logros / responsabilidades",
-    subtitle: "Una línea por bullet.",
-    placeholder: "• Logro 1...\n• Logro 2...",
-    required: false,
-    kind: "expBullets" as const,
-  },
-];
-
 type ExperienceDraft = {
   id: string;
   company: string;
@@ -290,7 +255,6 @@ export default function Home() {
   const [education, setEducation] = useState(() => loadDraft()?.education ?? "");
 
   const [experiences, setExperiences] = useState<ExperienceDraft[]>(() => loadDraft()?.experiences ?? []);
-  const [editingExpId, setEditingExpId] = useState<string | null>(null);
 
   const [skills, setSkills] = useState<string[]>(() => loadDraft()?.skills ?? []);
   const [skillInput, setSkillInput] = useState("");
@@ -368,17 +332,7 @@ export default function Home() {
       kind: "social" as const,
     }));
 
-    const extra: WizardStep[] = (extraSteps as unknown as WizardStep[]).flatMap((s) => {
-      if (s.kind === "experienceHome") {
-        return [
-          s,
-          ...(editingExpId
-            ? (experienceEditSteps as unknown as WizardStep[])
-            : []),
-        ];
-      }
-      return [s];
-    });
+    const extra: WizardStep[] = extraSteps as unknown as WizardStep[];
 
     return [
       ...baseSteps.map((s) => ({ ...s, kind: "base" } as WizardStep)),
@@ -387,19 +341,14 @@ export default function Home() {
         title: "¿Qué redes querés agregar?",
         subtitle: "Elegí todas las que apliquen.",
         kind: "socials",
-      } as WizardStep, 
+      } as WizardStep,
       ...socialSteps,
       ...extra,
     ];
-  }, [socials, editingExpId]);
+  }, [socials]);
 
   const step = steps[index];
   const total = steps.length;
-
-  const editingExp = useMemo(() => {
-    if (!editingExpId) return null;
-    return experiences.find((e) => e.id === editingExpId) ?? null;
-  }, [editingExpId, experiences]);
 
   const canNext = useMemo(() => {
     if (!step) return false;
@@ -417,41 +366,21 @@ export default function Home() {
       return isProbablyUrl(value);
     }
 
-    if (step.kind === "expCompany") return (editingExp?.company ?? "").trim().length > 0;
-    if (step.kind === "expTitle") return (editingExp?.title ?? "").trim().length > 0;
-    if (step.kind === "expDates") return (editingExp?.dates ?? "").trim().length > 0;
-
     return true;
-  }, [editingExp, form, socialLinks, step]);
+  }, [form, socialLinks, step]);
 
   const goNext = () => {
     if (!step) return;
-
-    if (step.kind === "expBullets") {
-      setEditingExpId(null);
-      return;
-    }
-
     if (index < total - 1) setIndex(index + 1);
   };
 
   const goPrev = () => {
     if (!step) return;
-
-    if (step.kind === "expCompany") {
-      setEditingExpId(null);
-      return;
-    }
-
     if (index > 0) setIndex(index - 1);
   };
 
   const skip = () => {
     if (!step) return;
-    if (step.kind === "expBullets") {
-      setEditingExpId(null);
-      return;
-    }
     goNext();
   };
 
@@ -492,12 +421,20 @@ export default function Home() {
       ...prev,
       { id, company: "", title: "", dates: "", bulletsText: "" },
     ]);
-    setEditingExpId(id);
+  };
+
+  const updateExperience = (
+    id: string,
+    field: keyof Omit<ExperienceDraft, "id">,
+    value: string
+  ) => {
+    setExperiences((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, [field]: value } : e))
+    );
   };
 
   const removeExperience = (id: string) => {
     setExperiences((prev) => prev.filter((e) => e.id !== id));
-    if (editingExpId === id) setEditingExpId(null);
   };
 
   const downloadProfileJson = () => {
@@ -538,16 +475,6 @@ export default function Home() {
 
   const removeApplication = (id: string) => {
     setApplications((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const updateEditingExperience = (
-    field: keyof Omit<ExperienceDraft, "id">,
-    value: string
-  ) => {
-    if (!editingExpId) return;
-    setExperiences((prev) =>
-      prev.map((e) => (e.id === editingExpId ? { ...e, [field]: value } : e))
-    );
   };
 
   const socialsList = socialOptions
@@ -716,20 +643,36 @@ export default function Home() {
                         key={e.id}
                         className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
                       >
-                        <div className="text-sm font-semibold">
-                          {e.company || `Experiencia ${idx + 1}`}
+                        <div className="mb-3 text-sm font-semibold text-zinc-200">
+                          Experiencia {idx + 1}
                         </div>
-                        <div className="mt-1 text-xs text-zinc-400">
-                          {(e.title || "Cargo") + " · " + (e.dates || "Fechas")}
+                        <div className="grid gap-2">
+                          <input
+                            className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none transition focus:border-sky-400"
+                            placeholder="Empresa"
+                            value={e.company}
+                            onChange={(ev) => updateExperience(e.id, "company", ev.target.value)}
+                          />
+                          <input
+                            className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none transition focus:border-sky-400"
+                            placeholder="Cargo"
+                            value={e.title}
+                            onChange={(ev) => updateExperience(e.id, "title", ev.target.value)}
+                          />
+                          <input
+                            className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none transition focus:border-sky-400"
+                            placeholder="Fechas (ej: 2023 — Presente)"
+                            value={e.dates}
+                            onChange={(ev) => updateExperience(e.id, "dates", ev.target.value)}
+                          />
+                          <textarea
+                            className="min-h-[110px] w-full resize-none rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm outline-none transition focus:border-sky-400"
+                            placeholder="Logros / responsabilidades (una línea por bullet)"
+                            value={e.bulletsText}
+                            onChange={(ev) => updateExperience(e.id, "bulletsText", ev.target.value)}
+                          />
                         </div>
-                        <div className="mt-3 flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setEditingExpId(e.id)}
-                            className="rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-200"
-                          >
-                            Editar
-                          </button>
+                        <div className="mt-3 flex justify-end">
                           <button
                             type="button"
                             onClick={() => removeExperience(e.id)}
@@ -750,48 +693,6 @@ export default function Home() {
                 >
                   + Agregar experiencia
                 </button>
-              </div>
-            )}
-
-            {(step.kind === "expCompany" ||
-              step.kind === "expTitle" ||
-              step.kind === "expDates") && (
-              <div>
-                <input
-                  className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-4 text-base outline-none transition focus:border-sky-400"
-                  placeholder={step.placeholder}
-                  value={
-                    step.kind === "expCompany"
-                      ? editingExp?.company ?? ""
-                      : step.kind === "expTitle"
-                      ? editingExp?.title ?? ""
-                      : editingExp?.dates ?? ""
-                  }
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (step.kind === "expCompany")
-                      updateEditingExperience("company", v);
-                    else if (step.kind === "expTitle")
-                      updateEditingExperience("title", v);
-                    else updateEditingExperience("dates", v);
-                  }}
-                />
-              </div>
-            )}
-
-            {step.kind === "expBullets" && (
-              <div>
-                <textarea
-                  className="min-h-[200px] w-full resize-none rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-4 text-base outline-none transition focus:border-sky-400"
-                  placeholder={step.placeholder}
-                  value={editingExp?.bulletsText ?? ""}
-                  onChange={(e) =>
-                    updateEditingExperience("bulletsText", e.target.value)
-                  }
-                />
-                <div className="mt-2 text-xs text-zinc-400">
-                  Tip: empezá cada línea con “•” o “-” para que quede prolijo.
-                </div>
               </div>
             )}
 
