@@ -12,10 +12,8 @@ function SectionTitle({ children }: { children: ReactNode }) {
 }
 
 function ContactRow({
-  label,
   value,
 }: {
-  label: string;
   value: string;
 }) {
   return (
@@ -57,14 +55,11 @@ export function TemplateClassic({ data }: { data: CvData }) {
           </div>
 
           <div className="mt-3 grid gap-2 text-xs text-zinc-600">
-            <ContactRow label="city" value={data.city} />
-            <ContactRow label="email" value={data.email} />
+            <ContactRow value={data.city} />
+            {data.phone && <ContactRow value={data.phone} />}
+            <ContactRow value={data.email} />
             {data.socials.slice(0, 4).map((s) => (
-              <ContactRow
-                key={s.label}
-                label={s.label}
-                value={`${s.label}: ${s.value}`}
-              />
+              <ContactRow key={s.label} value={`${s.label}: ${s.value}`} />
             ))}
           </div>
 

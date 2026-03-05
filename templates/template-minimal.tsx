@@ -39,6 +39,7 @@ export function TemplateMinimal({ data }: { data: CvData }) {
             </div>
             <div className="mt-3 grid gap-2 text-xs text-zinc-700">
               <div className="break-words">{data.city}</div>
+              {data.phone && <div className="break-words">{data.phone}</div>}
               <div className="break-all">{data.email}</div>
               {data.socials.slice(0, 4).map((s) => (
                 <div key={s.label} className="break-all text-zinc-600">

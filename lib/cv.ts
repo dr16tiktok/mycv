@@ -14,7 +14,11 @@ export type CvData = {
   fullName: string;
   role: string;
   city: string;
+  phone?: string;
   email: string;
+  workMode?: string;
+  relocation?: string;
+  languages?: string[];
   summary: string;
   // Legacy fallback (keep for now)
   experience: string;

@@ -33,7 +33,7 @@ export function TemplateCreative({ data }: { data: CvData }) {
                 {data.fullName}
               </div>
               <div className="mt-3 text-sm text-white/90">
-                {data.city} · {data.email}
+                {data.city}{data.phone ? ` · ${data.phone}` : ""} · {data.email}
               </div>
             </div>
 

@@ -8,23 +8,23 @@ import { CvPaper } from "@/components/CvPaper";
 type StoredPrintPayload = {
   templateId: TemplateId;
   cvData: CvData;
-  savedAt: number;
 };
 
-export default function PrintPage() {
-  const [payload, setPayload] = useState<StoredPrintPayload | null>(null);
+function loadPrintPayload(): StoredPrintPayload | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("mycv:print");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredPrintPayload;
+    if (!parsed?.templateId || !parsed?.cvData) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("mycv:print");
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as StoredPrintPayload;
-      if (!parsed?.templateId || !parsed?.cvData) return;
-      setPayload(parsed);
-    } catch {
-      // ignore
-    }
-  }, []);
+export default function PrintPage() {
+  const [payload] = useState<StoredPrintPayload | null>(() => loadPrintPayload());
 
   const canPrint = !!payload;
 
